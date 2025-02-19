@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, FlatList } from "react-native";
+import { View, Text, StyleSheet, FlatList, Button } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useNavigation } from "@react-navigation/native";
 
 const WeatherHistoryComponent = () => {
+  const navigation = useNavigation();
   const [history, setHistory] = useState([]); // State for weather history
 
   // Load history from AsyncStorage when component mounts
@@ -33,6 +35,7 @@ const WeatherHistoryComponent = () => {
           </View>
         )}
       />
+      <Button title="Back to Weather" onPress={() => navigation.pop()} />
     </View>
   );
 };

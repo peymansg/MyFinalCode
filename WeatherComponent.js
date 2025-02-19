@@ -46,6 +46,8 @@ const WeatherComponent = () => {
       const currentResponse = await axios.get(
         `${BASE_URL}/weather?zip=${zipCode},us&units=imperial&appid=${API_KEY}`
       );
+      console.log("Current Weather Response:", currentResponse.data);
+
       setCurrentWeather(currentResponse.data);
 
       // Save the weather entry to history
@@ -59,7 +61,16 @@ const WeatherComponent = () => {
       const forecastResponse = await axios.get(
         `${BASE_URL}/forecast?zip=${zipCode},us&units=imperial&appid=${API_KEY}`
       );
-      setForecast(forecastResponse.data.list.slice(0, 5)); // Get first 5 entries
+      console.log(
+        "Raw Forecast Response:",
+        JSON.stringify(forecastResponse.data, null, 2)
+      );
+      if (forecastResponse.data && forecastResponse.data.list) {
+        // Fixed logging
+        setForecast(forecastResponse.data.list.slice(0, 5) || []); // Get first 5 entries
+      } else {
+        setForecast([]); // Fallback in case data is missing
+      }
       setError("");
     } catch (err) {
       setError("Invalid zip code or API error. Please try again.");
@@ -96,12 +107,12 @@ const WeatherComponent = () => {
         </View>
       )}
 
-      {forecast.length > 0 && (
+      {forecast && forecast.length > 0 ? (
         <View style={styles.forecastContainer}>
           <Text style={styles.title}>5-Day Forecast</Text>
           <FlatList
-            data={forecast}
-            keyExtractor={(item) => item.dt.toString()}
+            data={forecast} // Ensure it's always an array
+            keyExtractor={(item, index) => `${item.dt}-${index}`} // Ensure unique keys
             renderItem={({ item }) => (
               <View style={styles.forecastItem}>
                 <Text>
@@ -113,6 +124,8 @@ const WeatherComponent = () => {
             )}
           />
         </View>
+      ) : (
+        <Text>Loading forecast data...</Text>
       )}
     </View>
   );
