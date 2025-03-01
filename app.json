@@ -3,7 +3,14 @@
     "name": "myFinalCode",
     "slug": "myFinalCode",
     "version": "1.0.0",
+<<<<<<< HEAD
     "platforms": ["ios", "android"],
+=======
+    "platforms": [
+      "ios",
+      "android"
+    ],
+>>>>>>> 5e1136a (y)
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -12,7 +19,14 @@
         "@config-plugins/react-native-ble-plx",
         {
           "isBackgroundEnabled": true,
+<<<<<<< HEAD
           "modes": ["peripheral", "central"],
+=======
+          "modes": [
+            "peripheral",
+            "central"
+          ],
+>>>>>>> 5e1136a (y)
           "bluetoothAlwaysPermission": "Allow $(PRODUCT_NAME) to connect to bluetooth devices"
         }
       ],
@@ -56,7 +70,16 @@
         "ACCESS_NETWORK_STATE",
         "ACCESS_BACKGROUND_LOCATION",
         "CAMERA",
+<<<<<<< HEAD
         "RECORD_AUDIO"
+=======
+        "RECORD_AUDIO",
+        "android.permission.BLUETOOTH",
+        "android.permission.BLUETOOTH_ADMIN",
+        "android.permission.BLUETOOTH_CONNECT",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
+>>>>>>> 5e1136a (y)
       ],
       "config": {
         "googleMaps": {
@@ -66,6 +89,14 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
+<<<<<<< HEAD
+=======
+    },
+    "extra": {
+      "eas": {
+        "projectId": "bdc7a646-c022-4be0-a298-09dd14167631"
+      }
+>>>>>>> 5e1136a (y)
     }
   }
 }
