@@ -1,12 +1,12 @@
 import { StyleSheet, Text, View } from "react-native";
-import WeatherComponent from "./WeatherComponent";
+import WeatherComponent from "./components/WeatherComponent";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import WifiComponent from "./WifiComponent";
-import BarcodeScanner from "./BarcodeScanner";
-import BluetoothComponent from "./BluetoothComponent";
-import WeatherHistoryComponent from "./WeatherHistoryComponent";
+import WifiComponent from "./components/WifiComponent";
+import BarcodeScanner from "./components/BarcodeScanner";
+import BluetoothComponent from "./components/BluetoothComponent";
+import WeatherHistoryComponent from "./components/WeatherHistoryComponent";
 
 const Tab = createBottomTabNavigator();
 const WeatherStack = createNativeStackNavigator();

@@ -9,11 +9,17 @@ const WeatherHistoryComponent = () => {
 
   // Load history from AsyncStorage when component mounts
   useEffect(() => {
+    console.log("History items with keys:");
     const loadHistory = async () => {
       try {
         const savedHistory = await AsyncStorage.getItem("weatherHistory");
         if (savedHistory) {
-          setHistory(JSON.parse(savedHistory)); // Load the history into state
+          const parsedHistory = JSON.parse(savedHistory);
+          if (Array.isArray(parsedHistory)) {
+            setHistory(parsedHistory); // Load the history into state
+          } else {
+            console.error("History data is not an array.");
+          }
         }
       } catch (err) {
         console.error("Failed to load history:", err);
@@ -27,7 +33,9 @@ const WeatherHistoryComponent = () => {
       <Text style={styles.title}>Weather History</Text>
       <FlatList
         data={history}
-        keyExtractor={(item, index) => index.toString()} // Unique key for each item
+        keyExtractor={(item, index) =>
+          `${item.zipCode}-${item.temperature}-${item.timestamp || index}`
+        } // Add a timestamp or another unique field
         renderItem={({ item }) => (
           <View style={styles.historyItem}>
             <Text>Location: {item.zipCode}</Text>
@@ -35,7 +43,12 @@ const WeatherHistoryComponent = () => {
           </View>
         )}
       />
-      <Button title="Back to Weather" onPress={() => navigation.pop()} />
+      <Button
+        title="Back to Weather"
+        onPress={
+          () => navigation.navigate("WeatherComponent") // Navigate to history screen
+        }
+      />
     </View>
   );
 };

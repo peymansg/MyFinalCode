@@ -7,6 +7,7 @@ import {
   Button,
   StyleSheet,
   FlatList,
+  ScrollView,
 } from "react-native";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage"; // Correct import
@@ -66,6 +67,7 @@ const WeatherComponent = () => {
         JSON.stringify(forecastResponse.data, null, 2)
       );
       if (forecastResponse.data && forecastResponse.data.list) {
+        console.log("Forecast List:", forecastResponse.data.list);
         // Fixed logging
         setForecast(forecastResponse.data.list.slice(0, 5) || []); // Get first 5 entries
       } else {
@@ -79,55 +81,59 @@ const WeatherComponent = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <TextInput
-        style={styles.input}
-        placeholder="Enter zip code"
-        value={zipCode}
-        onChangeText={setZipCode}
-        keyboardType="numeric"
-      />
-      <Button title="Get Weather" onPress={fetchWeather} />
-      <View style={customStyles.buttonSpacing} />
-      <Button
-        title="Get Weather History"
-        onPress={
-          () => navigation.navigate("WeatherHistoryComponent") // Navigate to history screen
-        }
-      />
+    <ScrollView style={{ flex: 1 }}>
+      <View style={styles.container}>
+        <TextInput
+          style={styles.input}
+          placeholder="Enter zip code"
+          value={zipCode}
+          onChangeText={setZipCode}
+          keyboardType="numeric"
+        />
+        <Button title="Get Weather" onPress={fetchWeather} />
+        <View style={customStyles.buttonSpacing} />
+        <Button
+          title="Get Weather History"
+          onPress={
+            () => navigation.navigate("WeatherHistoryComponent") // Navigate to history screen
+          }
+        />
 
-      {error ? <Text style={styles.error}>{error}</Text> : null}
+        {error ? <Text style={styles.error}>{error}</Text> : null}
 
-      {currentWeather && (
-        <View style={styles.weatherContainer}>
-          <Text style={styles.title}>Current Weather</Text>
-          <Text>Location: {currentWeather.name}</Text>
-          <Text>Temperature: {currentWeather.main.temp}°F</Text>
-          <Text>Condition: {currentWeather.weather[0].description}</Text>
-        </View>
-      )}
+        {currentWeather && (
+          <View style={styles.weatherContainer}>
+            <Text style={styles.title}>Current Weather</Text>
+            <Text>Location: {currentWeather.name}</Text>
+            <Text>Temperature: {currentWeather.main.temp}°F</Text>
+            <Text>Condition: {currentWeather.weather[0].description}</Text>
+          </View>
+        )}
 
-      {forecast && forecast.length > 0 ? (
-        <View style={styles.forecastContainer}>
-          <Text style={styles.title}>5-Day Forecast</Text>
-          <FlatList
-            data={forecast} // Ensure it's always an array
-            keyExtractor={(item, index) => `${item.dt}-${index}`} // Ensure unique keys
-            renderItem={({ item }) => (
-              <View style={styles.forecastItem}>
-                <Text>
-                  Date: {new Date(item.dt * 1000).toLocaleDateString()}
-                </Text>
-                <Text>Temperature: {item.main.temp}°F</Text>
-                <Text>Condition: {item.weather[0].description}</Text>
-              </View>
-            )}
-          />
-        </View>
-      ) : (
-        <Text>Loading forecast data...</Text>
-      )}
-    </View>
+        {forecast && forecast.length > 0 ? (
+          <View style={styles.forecastContainer}>
+            <Text style={styles.title}>5-Day Forecast</Text>
+            <FlatList
+              data={forecast}
+              keyExtractor={(item, index) => `${item.dt}-${index}`}
+              contentContainerStyle={{ paddingBottom: 20 }}
+              style={{ flexGrow: 1 }}
+              renderItem={({ item }) => (
+                <View style={styles.forecastItem}>
+                  <Text>
+                    Date: {new Date(item.dt * 1000).toLocaleDateString()}
+                  </Text>
+                  <Text>Temperature: {item.main.temp}°F</Text>
+                  <Text>Condition: {item.weather[0].description}</Text>
+                </View>
+              )}
+            />
+          </View>
+        ) : (
+          <Text>Loading forecast data...</Text>
+        )}
+      </View>
+    </ScrollView>
   );
 };
 
