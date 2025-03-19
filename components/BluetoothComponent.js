@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+
 import {
   ScrollView,
   Modal,
@@ -11,8 +12,10 @@ import {
   StyleSheet,
   Linking,
   Alert,
+  Platform,
 } from "react-native";
 import { BleManager, State } from "react-native-ble-plx";
+import AndroidOpenSettings from "react-native-android-open-settings";
 
 const BluetoothComponent = () => {
   const [status, setStatus] = useState("Bluetooth Module not initialized");
@@ -22,6 +25,7 @@ const BluetoothComponent = () => {
   const [isBluetoothModalVisible, setIsBluetoothModalVisible] = useState(false);
   const [isServicesModalVisible, setIsServicesModalVisible] = useState(false);
   const [connectedDevice, setConnectedDevice] = useState(null);
+  const [bluetoothEnabled, setBluetoothEnabled] = useState(false);
   const [servicesAndCharacteristics, setServicesAndCharacteristics] = useState(
     []
   );
@@ -30,7 +34,6 @@ const BluetoothComponent = () => {
     const bleManager = new BleManager();
     setManager(bleManager);
 
-    // Clean up when unmounting
     return () => {
       bleManager.destroy();
     };
@@ -45,6 +48,8 @@ const BluetoothComponent = () => {
       setIsBluetoothModalVisible(true);
       return false;
     }
+    setBluetoothEnabled(true);
+    setIsBluetoothModalVisible(false);
     return true;
   }
 
@@ -96,9 +101,7 @@ const BluetoothComponent = () => {
         return;
       }
       if (device && device.id) {
-        // Use functional update to avoid duplicates
         setDevices((prevDevices) => {
-          // If a device with the same id exists, skip adding it
           if (prevDevices.some((d) => d.id === device.id)) {
             return prevDevices;
           } else {
@@ -108,7 +111,6 @@ const BluetoothComponent = () => {
       }
     });
 
-    // Stop scanning after 10 seconds
     setTimeout(() => {
       manager.stopDeviceScan();
       setScanning(false);
@@ -131,7 +133,6 @@ const BluetoothComponent = () => {
       const device = await manager.connectToDevice(deviceId);
       await device.discoverAllServicesAndCharacteristics();
 
-      // Fetch services and characteristics
       const services = await device.services();
       const characteristics = await Promise.all(
         services.map(async (service) => {
@@ -164,8 +165,11 @@ const BluetoothComponent = () => {
   const closeBluetoothModal = () => {
     setIsBluetoothModalVisible(false);
   };
-  const closeServicesModal = () => {
+  const closeServicesModal = async () => {
     setIsServicesModalVisible(false);
+    const bluetoothReady = await checkBluetoothState();
+    if (bluetoothReady) {
+    }
   };
 
   const renderServicesAndCharacteristics = () => {
@@ -195,7 +199,7 @@ const BluetoothComponent = () => {
         renderItem={renderDevice}
         style={styles.deviceList}
       />
-      {/* Modal for Bluetooth not enabled */}
+
       <Modal
         transparent={true}
         visible={isBluetoothModalVisible}
@@ -208,40 +212,41 @@ const BluetoothComponent = () => {
             <Text style={styles.modalText}>
               Please enable Bluetooth to continue.
             </Text>
-            <Button
-              title="Enable Bluetooth"
-              onPress={async () => {
-                try {
-                  // Check if the URL scheme for opening Bluetooth settings is supported
-                  const supported = await Linking.canOpenURL(
-                    "android.settings.BLUETOOTH_SETTINGS"
-                  );
-
-                  if (supported) {
-                    // Open Bluetooth settings on Android
-                    await Linking.openURL(
-                      "android.settings.BLUETOOTH_SETTINGS"
-                    );
-                  } else {
-                    // Open general settings if Bluetooth settings are not supported
-                    await Linking.openSettings();
-                    Alert.alert(
-                      "Info",
-                      "Please enable Bluetooth in the settings."
-                    );
-                  }
-                } catch (error) {
-                  // Handle errors opening the settings
-                  console.error("Error opening Bluetooth settings:", error);
-                  Alert.alert("Error", "Failed to open Bluetooth settings.");
-                }
-              }}
-            />
-            <Button title="Cancel" onPress={closeBluetoothModal} />
+            <View style={styles.buttonEnable}>
+              <Text style={styles.infoText}></Text>
+              <View style={styles.buttonsEnablePadding}>
+                <Button
+                  title="Enable Bluetooth"
+                  onPress={async () => {
+                    try {
+                      if (Platform.OS === "android") {
+                        AndroidOpenSettings.bluetoothSettings(); // Opens Bluetooth settings
+                      } else if (Platform.OS === "ios") {
+                        await Linking.openURL("App-Prefs:Bluetooth"); // Opens Bluetooth settings on iOS
+                      } else {
+                        Alert.alert(
+                          "Unsupported",
+                          "This feature is not supported on your platform."
+                        );
+                      }
+                      closeBluetoothModal();
+                    } catch (error) {
+                      console.error("Error opening Bluetooth settings:", error);
+                      Alert.alert(
+                        "Error",
+                        "Failed to open Bluetooth settings."
+                      );
+                    }
+                  }}
+                />
+              </View>
+              <View style={styles.buttonsEnablePadding}>
+                <Button title="Cancel" onPress={closeBluetoothModal} />
+              </View>
+            </View>
           </View>
         </View>
       </Modal>
-      //Services and Characteristics Modal
       <Modal
         transparent={true}
         visible={isServicesModalVisible}
@@ -264,7 +269,16 @@ const BluetoothComponent = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, marginTop: 50 },
+  container: {
+    flex: 1,
+    padding: 20,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  infoText: {
+    fontSize: 16,
+    marginBottom: 10,
+  },
   status: { marginBottom: 10, fontSize: 16, fontWeight: "bold" },
   deviceList: { marginTop: 20 },
   deviceItem: {
@@ -290,6 +304,8 @@ const styles = StyleSheet.create({
   serviceItem: { marginBottom: 15 },
   serviceName: { fontSize: 16, fontWeight: "bold" },
   characteristicName: { fontSize: 14, color: "#555" },
+  buttonEnable: { flexDirection: "row" },
+  buttonsEnablePadding: { padding: 5, margin: 5 },
 });
 
 export default BluetoothComponent;
